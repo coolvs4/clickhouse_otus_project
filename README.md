@@ -41,7 +41,21 @@ docker compose ps
 docker exec -u nifi -it nifi bash -c 'source /opt/nifi/scripts/common.sh && prop_replace "nifi.flow.configuration.file" "/opt/nifi/nifi-current/flow/flow.json.gz"'
 ```
 
-Затем откройте NiFi в браузере по адресу [https://localhost:8443](https://localhost:8443) и войдите с учётными данными из `.env`.
+```powershell
+docker compose restart nifi
+```
+
+Убедитесь, что все серверы ClickHouse успешно запущены. Выполните в PowerShell команду ниже, чтобы проверить запросом `SELECT 1` все узлы кластера и ClickHouse Observability:
+
+```powershell
+$containers = @("clickhouse-01", "clickhouse-02", "clickhouse-03", "clickhouse-04", "clickhouse-observability")
+foreach ($container in $containers) {
+    Write-Host "`n${container}:"
+    docker exec $container clickhouse-client --user admin --password admin --query "SELECT 1"
+}
+```
+
+Команда использует значения учётных данных по умолчанию (`admin`/`admin`). Если они изменены, укажите актуальные значения из `.env`. Для каждого сервера в выводе должно появиться `1`. Затем откройте NiFi в браузере по адресу [https://localhost:8443](https://localhost:8443) и войдите с учётными данными из `.env`.
 
 В интерфейсе NiFi щёлкните правой кнопкой мыши по холсту и запустите все потоки (**Start**). Потоки:
 
