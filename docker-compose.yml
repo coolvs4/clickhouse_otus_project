@@ -1,0 +1,177 @@
+services:
+  clickhouse-01:
+    image: clickhouse:latest
+    container_name: clickhouse-01
+    hostname: clickhouse-01
+    ports:
+      - "18123:8123"
+      - "19000:9000"
+      - "9363:9363"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - ./clickhouse-cluster/ch01/data:/var/lib/clickhouse/
+      - ./clickhouse-cluster/ch01/logs:/var/log/clickhouse-server/ 
+      - ./clickhouse-cluster/ch01/config/config.d:/etc/clickhouse-server/config.d/
+      - ./clickhouse-cluster/ch01/config/users.d:/etc/clickhouse-server/users.d/
+      - ./clickhouse-cluster/initdb.d:/docker-entrypoint-initdb.d/
+    environment:
+      CLICKHOUSE_USER: "${CLICKHOUSE_CLUSTER_USER}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_CLUSTER_PASSWORD}"
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    restart: unless-stopped
+
+  clickhouse-02:
+    image: clickhouse:latest
+    container_name: clickhouse-02
+    hostname: clickhouse-02
+    ports:
+      - "18124:8123"
+      - "19001:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - ./clickhouse-cluster/ch02/data:/var/lib/clickhouse/
+      - ./clickhouse-cluster/ch02/logs:/var/log/clickhouse-server/ 
+      - ./clickhouse-cluster/ch02/config/config.d:/etc/clickhouse-server/config.d/
+      - ./clickhouse-cluster/ch02/config/users.d:/etc/clickhouse-server/users.d/
+      - ./clickhouse-cluster/initdb.d:/docker-entrypoint-initdb.d/
+    environment:
+      CLICKHOUSE_USER: "${CLICKHOUSE_CLUSTER_USER}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_CLUSTER_PASSWORD}"
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    restart: unless-stopped
+
+  clickhouse-03:
+    image: clickhouse:latest
+    container_name: clickhouse-03
+    hostname: clickhouse-03
+    ports:
+      - "18125:8123"
+      - "19002:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - ./clickhouse-cluster/ch03/data:/var/lib/clickhouse/
+      - ./clickhouse-cluster/ch03/logs:/var/log/clickhouse-server/ 
+      - ./clickhouse-cluster/ch03/config/config.d:/etc/clickhouse-server/config.d/
+      - ./clickhouse-cluster/ch03/config/users.d:/etc/clickhouse-server/users.d/
+      - ./clickhouse-cluster/initdb.d:/docker-entrypoint-initdb.d/
+    environment:
+      CLICKHOUSE_USER: "${CLICKHOUSE_CLUSTER_USER}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_CLUSTER_PASSWORD}"
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    restart: unless-stopped
+
+  clickhouse-04:
+    image: clickhouse:latest
+    container_name: clickhouse-04
+    hostname: clickhouse-04
+    ports:
+      - "18126:8123"
+      - "19003:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - ./clickhouse-cluster/ch04/data:/var/lib/clickhouse/
+      - ./clickhouse-cluster/ch04/logs:/var/log/clickhouse-server/ 
+      - ./clickhouse-cluster/ch04/config/config.d:/etc/clickhouse-server/config.d/
+      - ./clickhouse-cluster/ch04/config/users.d:/etc/clickhouse-server/users.d/
+      - ./clickhouse-cluster/initdb.d:/docker-entrypoint-initdb.d/
+    environment:
+      CLICKHOUSE_USER: "${CLICKHOUSE_CLUSTER_USER}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_CLUSTER_PASSWORD}"
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    restart: unless-stopped
+
+  clickhouse-observability:
+    image: clickhouse:latest
+    container_name: clickhouse-observability
+    hostname: clickhouse-observability
+    ports:
+      - "18127:8123"
+      - "19004:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - ./clickhouse-observability-storage/data:/var/lib/clickhouse/
+      - ./clickhouse-observability-storage/logs:/var/log/clickhouse-server/ 
+      - ./clickhouse-observability-storage/config/config.d:/etc/clickhouse-server/config.d/
+      - ./clickhouse-observability-storage/config/users.d:/etc/clickhouse-server/users.d/
+      - ./clickhouse-observability-storage/initdb.d:/docker-entrypoint-initdb.d/
+    environment:
+      CLICKHOUSE_USER: "${CLICKHOUSE_USER}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_PASSWORD}"
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    restart: unless-stopped
+
+  clickhouse-mcp:
+    build:
+      context: ./clickhouse-mcp
+      dockerfile: Dockerfile
+    container_name: clickhouse-mcp
+    hostname: clickhouse-mcp
+    restart: unless-stopped
+
+    ports:
+      - "${MCP_PORT:-8000}:${MCP_PORT:-8000}"
+
+    environment:
+      MCP_PORT: "${MCP_PORT:-8000}"
+      CLICKHOUSE_HOST: "${CLICKHOUSE_HOST}"
+      CLICKHOUSE_PORT: "${CLICKHOUSE_PORT}"
+      CLICKHOUSE_USER: "${CLICKHOUSE_USER}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_PASSWORD}"
+      CLICKHOUSE_SECURE: "false"
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    restart: always
+
+
+  nifi:
+    image: apache/nifi:2.12.0
+    container_name: nifi
+    restart: unless-stopped
+
+    ports:
+      - "8443:8443"
+
+    environment:
+      SINGLE_USER_CREDENTIALS_USERNAME: "${NIFI_USER}"
+      SINGLE_USER_CREDENTIALS_PASSWORD: "${NIFI_PASSWORD}"
+      NIFI_SENSITIVE_PROPS_KEY: "123456789101112"
+
+    volumes:
+      - ./nifi/flow:/opt/nifi/nifi-current/flow
+      - nifi_data:/opt/nifi/nifi-current/database_repository
+      - nifi_flowfile:/opt/nifi/nifi-current/flowfile_repository
+      - nifi_content:/opt/nifi/nifi-current/content_repository
+      - nifi_provenance:/opt/nifi/nifi-current/provenance_repository
+      - nifi_state:/opt/nifi/nifi-current/state
+
+
+
+
+volumes:
+  open-webui:
+  nifi_data:
+  nifi_flowfile:
+  nifi_content:
+  nifi_provenance:
+  nifi_state:

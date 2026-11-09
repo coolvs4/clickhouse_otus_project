@@ -1,0 +1,5 @@
+# ClickHouse runtime data and logs
+/clickhouse-cluster/**/data/
+/clickhouse-cluster/**/logs/
+/clickhouse-observability-storage/data/
+/clickhouse-observability-storage/logs/
