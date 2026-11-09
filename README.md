@@ -50,17 +50,17 @@ docker exec -u nifi -it nifi bash -c 'source /opt/nifi/scripts/common.sh && prop
 
 ## Адреса и порты
 
-| Сервис | Адрес с Windows-хоста | Назначение |
-|---|---|---|
-| ClickHouse 01 | `http://localhost:18123` | HTTP-интерфейс узла 01 |
-| ClickHouse 02 | `http://localhost:18124` | HTTP-интерфейс узла 02 |
-| ClickHouse 03 | `http://localhost:18125` | HTTP-интерфейс узла 03 |
-| ClickHouse 04 | `http://localhost:18126` | HTTP-интерфейс узла 04 |
-| ClickHouse Observability | `http://localhost:18127` | HTTP-интерфейс хранилища наблюдаемости |
-| ClickHouse MCP | `http://localhost:8000` | MCP-сервис |
-| Open WebUI | `http://localhost:3000` | Веб-интерфейс |
-| NiFi | `https://localhost:8443` | Управление потоками |
-| Prometheus metrics | `http://localhost:9363/metrics` | Метрики ClickHouse 01 |
+
+| Сервис             | Адрес с Windows-хоста | Назначение                                                  |
+| ------------------------ | -------------------------------- | --------------------------------------------------------------------- |
+| ClickHouse 01            | `http://localhost:18123`         | HTTP-интерфейс узла 01                                   |
+| ClickHouse 02            | `http://localhost:18124`         | HTTP-интерфейс узла 02                                   |
+| ClickHouse 03            | `http://localhost:18125`         | HTTP-интерфейс узла 03                                   |
+| ClickHouse 04            | `http://localhost:18126`         | HTTP-интерфейс узла 04                                   |
+| ClickHouse Observability | `http://localhost:18127`         | HTTP-интерфейс хранилища наблюдаемости |
+| ClickHouse MCP           | `http://localhost:8000`          | MCP-сервис                                                      |
+| Open WebUI               | `http://localhost:3000`          | Веб-интерфейс                                             |
+| NiFi                     | `https://localhost:8443`         | Управление потоками                                 |
 
 Нативные TCP-порты ClickHouse, опубликованные на хосте: `19000`–`19004` для узлов 01–04 и Observability соответственно.
 
@@ -70,11 +70,12 @@ docker exec -u nifi -it nifi bash -c 'source /opt/nifi/scripts/common.sh && prop
 
 Значения по умолчанию из `.env`:
 
-| Сервис | Пользователь | Пароль |
-|---|---|---|
-| ClickHouse cluster | `admin` | `admin` |
-| ClickHouse Observability | `admin` | `admin` |
-| NiFi | `admin` | `adminadminadmin` |
+
+| Сервис             | Пользователь | Пароль      |
+| ------------------------ | ------------------------ | ----------------- |
+| ClickHouse cluster       | `admin`                  | `admin`           |
+| ClickHouse Observability | `admin`                  | `admin`           |
+| NiFi                     | `admin`                  | `adminadminadmin` |
 
 Пароль NiFi должен содержать **более 12 символов**. Текущее значение `adminadminadmin` соответствует этому требованию.
 
@@ -126,18 +127,19 @@ ClickHouse MCP можно подключить и к Claude Desktop. Для эт
 1. **Просмотр баз и таблиц**
 
    > List the databases available in ClickHouse, then show me the tables in one of them.
-
+   >
 2. **Оценка ошибок по `error_log`**
 
    > Посмотри таблицу `observability.error_log` и оцени состояние кластера. Сколько ошибок возникает за единицу времени? Покажи динамику ошибок по времени, укажи наиболее частые ошибки и объясни, достаточно ли данных для вывода о состоянии кластера.
-
+   >
 3. **Общая оценка наблюдаемости и нагрузки**
 
    > Проанализируй таблицы в базе `observability` и оцени состояние кластера: какие запросы создают наибольшую нагрузку, есть ли ошибки и какова общая нагрузка? Приведи временной интервал и метрики, на которых основаны выводы.
-
+   >
 4. **Нагрузка от SELECT-запросов по узлам за последние пять минут**
 
    > За последние 5 минут оцени нагрузку от `SELECT`-запросов по узлам ClickHouse. Используй поле `hostname` для группировки, сравни количество запросов, суммарную и среднюю длительность, а также прочитанные строки и байты. Выдели наиболее нагруженный узел и объясни критерий оценки.
+   >
 
 Результаты зависят от того, какие данные успели собрать потоки NiFi. Для корректного сравнения просите MCP указывать временной интервал, используемые поля и критерий нагрузки; выводы по небольшому числу событий следует считать предварительными.
 
